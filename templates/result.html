@@ -1,19 +1,216 @@
 {% extends 'base.html' %}
 {% block content %}
-  <div class="row justify-content-center">
+  <div class="row justify-content-center slide-up">
     <div class="col-lg-10">
-      <div class="d-flex justify-content-between mb-3">
-        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">&#8592; Back</a>
-        <a href="{{ url_for('index') }}" download="transcript.txt" onclick="this.href='data:text/plain;charset=utf-8,' + encodeURIComponent(`{{ transcript }}`)" class="btn btn-success">Download Transcript</a>
+      <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{{ url_for('index') }}"><i class="fas fa-home"></i> Home</a></li>
+          <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}"><i class="fas fa-list"></i> My Transcripts</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Transcript Result</li>
+        </ol>
+      </nav>
+
+      <!-- Video Info Card -->
+      <div class="card mb-4 transcript-card">
+        <div class="transcript-header">
+          <h5 class="transcript-title">
+            <i class="fab fa-youtube text-danger me-2"></i>YouTube Transcript
+          </h5>
+          <div class="transcript-actions">
+            <a href="{{ url_for('dashboard') }}" class="btn btn-sm btn-outline-primary">
+              <i class="fas fa-history"></i> View All
+            </a>
+            <a href="{{ url_for('index') }}" download="transcript.txt" 
+              onclick="this.href='data:text/plain;charset=utf-8,' + encodeURIComponent(`{{ transcript }}`)" 
+              class="btn btn-sm btn-primary">
+              <i class="fas fa-download"></i> Download
+            </a>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <div class="video-info mb-4">
+            <div class="d-flex align-items-center">
+              <div class="video-thumbnail me-3">
+                {% set video_id = video_url.split('v=')[1].split('&')[0] if 'v=' in video_url else video_url.split('/')[-1] %}
+                <img 
+                  src="https://img.youtube.com/vi/{{ video_id }}/mqdefault.jpg" 
+                  alt="Video Thumbnail" 
+                  class="img-fluid rounded"
+                  style="max-width: 200px;"
+                >
+              </div>
+              <div>
+                <h5 class="mb-2">Video URL</h5>
+                <a href="{{ video_url }}" target="_blank" class="d-block text-break mb-2">
+                  <i class="fas fa-external-link-alt me-1"></i> {{ video_url }}
+                </a>
+                <div class="d-flex mt-2">
+                  <span class="badge rounded-pill bg-success me-2">
+                    <i class="fas fa-check-circle me-1"></i> Extraction Complete
+                  </span>
+                  <span class="badge rounded-pill bg-primary">
+                    <i class="fas fa-save me-1"></i> Saved to History
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <hr>
+
+          <!-- Transcript content with search functionality -->
+          <div class="mb-3">
+            <label for="searchTranscript" class="form-label fw-bold">
+              <i class="fas fa-search me-2"></i>Search Transcript
+            </label>
+            <input 
+              type="text" 
+              class="form-control" 
+              id="searchTranscript" 
+              placeholder="Type to search within transcript..."
+            >
+            <div class="form-text">
+              <span id="searchMatches">0</span> matches found
+            </div>
+          </div>
+
+          <div class="transcript-container">
+            <div class="d-flex justify-content-between mb-2">
+              <h5 class="fw-bold mb-3">
+                <i class="fas fa-closed-captioning me-2 text-primary"></i>Transcript Content
+              </h5>
+              <div class="transcript-controls">
+                <button class="btn btn-sm btn-outline-secondary me-1" id="copyTranscript">
+                  <i class="fas fa-copy"></i> Copy All
+                </button>
+                <div class="btn-group" role="group">
+                  <button class="btn btn-sm btn-outline-secondary" id="decreaseFont">
+                    <i class="fas fa-minus"></i>
+                  </button>
+                  <button class="btn btn-sm btn-outline-secondary" id="increaseFont">
+                    <i class="fas fa-plus"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <pre id="transcriptContent" class="transcript">{{ transcript or 'No transcript available.' }}</pre>
+          </div>
+        </div>
       </div>
 
-      <div class="card shadow-sm">
+      <!-- Suggested Actions -->
+      <div class="card mb-4">
         <div class="card-body">
-          <h5 class="card-title">Transcript for:</h5>
-          <p><a href="{{ video_url }}" target="_blank">{{ video_url }}</a></p>
-          <pre class="transcript">{{ transcript or 'No transcript available.' }}</pre>
+          <h5 class="card-title">
+            <i class="fas fa-lightbulb me-2 text-warning"></i>What's Next?
+          </h5>
+          <div class="row mt-3">
+            <div class="col-md-4">
+              <div class="d-flex align-items-center mb-3">
+                <div class="me-3">
+                  <i class="fas fa-history fa-2x text-primary"></i>
+                </div>
+                <div>
+                  <h6 class="mb-1">View History</h6>
+                  <a href="{{ url_for('dashboard') }}" class="btn btn-sm btn-outline-primary">Go to Dashboard</a>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="d-flex align-items-center mb-3">
+                <div class="me-3">
+                  <i class="fas fa-plus-circle fa-2x text-success"></i>
+                </div>
+                <div>
+                  <h6 class="mb-1">Extract Another</h6>
+                  <a href="{{ url_for('index') }}" class="btn btn-sm btn-outline-success">New Transcript</a>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="d-flex align-items-center mb-3">
+                <div class="me-3">
+                  <i class="fas fa-download fa-2x text-info"></i>
+                </div>
+                <div>
+                  <h6 class="mb-1">Save Content</h6>
+                  <a href="#" onclick="document.getElementById('downloadLink').click(); return false;" class="btn btn-sm btn-outline-info">Download Text</a>
+                  <a id="downloadLink" href="{{ url_for('index') }}" download="transcript.txt" 
+                    onclick="this.href='data:text/plain;charset=utf-8,' + encodeURIComponent(`{{ transcript }}`)" 
+                    style="display: none;">Hidden Download Link</a>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- JavaScript for transcript interactions -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Transcript font size control
+      const transcriptContent = document.getElementById('transcriptContent');
+      const increaseFontBtn = document.getElementById('increaseFont');
+      const decreaseFontBtn = document.getElementById('decreaseFont');
+      let currentFontSize = parseFloat(window.getComputedStyle(transcriptContent).fontSize);
+      
+      increaseFontBtn.addEventListener('click', function() {
+        currentFontSize += 1;
+        transcriptContent.style.fontSize = currentFontSize + 'px';
+      });
+      
+      decreaseFontBtn.addEventListener('click', function() {
+        if (currentFontSize > 10) {
+          currentFontSize -= 1;
+          transcriptContent.style.fontSize = currentFontSize + 'px';
+        }
+      });
+      
+      // Copy transcript
+      const copyBtn = document.getElementById('copyTranscript');
+      copyBtn.addEventListener('click', function() {
+        const transcriptText = transcriptContent.textContent;
+        navigator.clipboard.writeText(transcriptText).then(function() {
+          const originalText = copyBtn.innerHTML;
+          copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+          setTimeout(function() {
+            copyBtn.innerHTML = originalText;
+          }, 2000);
+        });
+      });
+      
+      // Search within transcript
+      const searchInput = document.getElementById('searchTranscript');
+      const searchMatches = document.getElementById('searchMatches');
+      
+      searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.trim().toLowerCase();
+        if (searchTerm.length < 2) {
+          // Reset highlighting
+          transcriptContent.innerHTML = transcriptContent.textContent;
+          searchMatches.textContent = '0';
+          return;
+        }
+        
+        // Get the original text
+        const originalText = transcriptContent.textContent;
+        
+        // Count matches
+        const regex = new RegExp(searchTerm, 'gi');
+        const matches = originalText.match(regex);
+        const matchCount = matches ? matches.length : 0;
+        searchMatches.textContent = matchCount;
+        
+        // Highlight matches
+        let highlightedText = originalText.replace(regex, function(match) {
+          return '<mark class="highlight">' + match + '</mark>';
+        });
+        
+        transcriptContent.innerHTML = highlightedText;
+      });
+    });
+  </script>
 {% endblock %}
