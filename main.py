@@ -3,7 +3,8 @@ from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from youtube_transcript_api import YouTubeTranscriptApi, NoTranscriptFound, TranscriptsDisabled
+from youtube_transcript_api._api import YouTubeTranscriptApi
+from youtube_transcript_api._errors import NoTranscriptFound, TranscriptsDisabled
 from urllib.parse import urlparse, parse_qs
 from models import db, User, Transcript
 
@@ -29,8 +30,8 @@ def extract_video_id(url):
         return parse_qs(parsed.query).get('v', [None])[0]
     return None
 
-@app.before_first_request
-def create_tables():
+# Setup database tables
+with app.app_context():
     db.create_all()
 
 @app.route('/')
@@ -110,4 +111,4 @@ def dashboard():
     return render_template('dashboard.html', transcripts=transcripts)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
