@@ -1,0 +1,10 @@
+body {
+  background-color: #f8f9fa;
+}
+.card {
+  border: none;
+}
+.transcript {
+  white-space: pre-wrap;
+  font-family: Menlo, Monaco, monospace;
+}

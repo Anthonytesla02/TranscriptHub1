@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+<h4>Your Transcripts</h4>
+{% if transcripts %}
+  <ul class="list-group">
+    {% for t in transcripts %}
+    <li class="list-group-item">
+      <strong>{{ t.video_url }}</strong><br>
+      <small>{{ t.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+      <pre class="transcript mt-2">{{ t.content }}</pre>
+    </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>No transcripts yet.</p>
+{% endif %}
+{% endblock %}
