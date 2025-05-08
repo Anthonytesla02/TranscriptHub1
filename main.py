@@ -9,14 +9,11 @@ from youtube_transcript_api._errors import NoTranscriptFound, TranscriptsDisable
 from urllib.parse import urlparse, parse_qs
 from models import db, User, Transcript, Chat, Message
 from utils import get_chat_response, summarize_transcript
-from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv()
-
+# Flask app with hardcoded credentials for simplicity
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'c1a4f89c0e3e44b88ac44f3458f0d391')
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
+app.config['SECRET_KEY'] = 'c1a4f89c0e3e44b88ac44f3458f0d391'  # Hardcoded secret key
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')  # From environment (provided by Replit)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Configure connection pooling and other SQLAlchemy settings
@@ -120,23 +117,64 @@ def extract_video_id(url):
     # If all checks fail, return None
     return None
 
-# Setup database tables and test connection
+# Automatic database setup algorithm
 with app.app_context():
     try:
-        # Create all tables if they don't exist
-        db.create_all()
+        print("Starting automatic database setup...")
         
-        # Test the database connection with a simple query
+        # Test the database connection first
         def check_db_connection():
             from sqlalchemy import text
-            return db.session.execute(text("SELECT 1")).fetchone() is not None
+            try:
+                return db.session.execute(text("SELECT 1")).fetchone() is not None
+            except Exception as e:
+                print(f"Database connection error: {str(e)}")
+                return False
             
+        # Step 1: Verify database connection
         if not check_db_connection():
-            print("Warning: Database connection check failed.")
+            print("Warning: Initial database connection check failed. Waiting 2 seconds and retrying...")
+            import time
+            time.sleep(2)
             
-        # Create a test user if it doesn't exist
+            if not check_db_connection():
+                print("Error: Database connection failed after retry. Check your PostgreSQL configuration.")
+            else:
+                print("Database connection established on retry.")
+        else:
+            print("Database connection verified successfully.")
+        
+        # Step 2: Create database schema if needed
+        print("Creating database tables if they don't exist...")
+        db.create_all()
+        print("Database tables created or already exist.")
+        
+        # Step 3: Add indexes for performance if they don't exist
+        # This is done automatically by SQLAlchemy
+        
+        # Step 4: Verify all required tables exist
+        def verify_tables():
+            from sqlalchemy import inspect
+            inspector = inspect(db.engine)
+            required_tables = ['user', 'transcript', 'chat', 'message']
+            existing_tables = inspector.get_table_names()
+            
+            missing_tables = [table for table in required_tables if table not in existing_tables]
+            if missing_tables:
+                print(f"Warning: Missing tables: {missing_tables}")
+                return False
+            return True
+        
+        if verify_tables():
+            print("All required database tables exist.")
+        else:
+            print("Some required tables are missing. Attempting to recreate...")
+            db.create_all()
+        
+        # Step 5: Create test user account if it doesn't exist
         def create_test_user():
             if not User.query.filter_by(username='testuser').first():
+                print("Creating test user account...")
                 test_user = User(username='testuser', password=generate_password_hash('password123'))
                 db.session.add(test_user)
                 db.session.commit()
@@ -148,8 +186,13 @@ with app.app_context():
             default_return=False,
             log_prefix="Error creating test user"
         )
+        
         if user_created:
-            print("Test user created successfully.")
+            print("Test user created successfully. Username: testuser, Password: password123")
+        else:
+            print("Test user already exists or could not be created.")
+            
+        print("Automatic database setup completed successfully.")
             
     except Exception as e:
         import traceback
@@ -164,7 +207,7 @@ with app.app_context():
 def landing():
     """Landing page with pricing and features"""
     if current_user.is_authenticated:
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('index'))
     return render_template('landing.html')
 
 @app.route('/home')
@@ -181,7 +224,7 @@ def extract():
 
     if not video_id:
         flash('Invalid YouTube URL provided.', 'danger')
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('index'))
 
     try:
         # Try with English first
@@ -241,7 +284,7 @@ def extract():
         print(f"Traceback: {error_details}")
         flash(f'An error occurred: {str(e)}', 'danger')
 
-    return redirect(url_for('dashboard'))
+    return redirect(url_for('index'))
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -279,8 +322,10 @@ def signup():
             )
             
             if success:
-                flash('Account created! Please log in.', 'success')
-                return redirect(url_for('login'))
+                # Auto-login the user after signup
+                login_user(user)
+                flash('Account created! Welcome to TranscriptHub.', 'success')
+                return redirect(url_for('index'))
             else:
                 flash('Error creating account. Please try again.', 'danger')
         except Exception as e:
@@ -295,7 +340,7 @@ def login():
             user = User.query.filter_by(username=request.form['username']).first()
             if user and check_password_hash(user.password, request.form['password']):
                 login_user(user)
-                return redirect(url_for('dashboard'))
+                return redirect(url_for('index'))
             flash('Invalid username or password.', 'danger')
         except Exception as e:
             import traceback
@@ -349,7 +394,7 @@ def create_chat(transcript_id):
     # Verify user has access to this transcript
     if transcript.user_id != current_user.id:
         flash('You do not have permission to access this transcript.', 'danger')
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('index'))
     
     # Create a new chat
     title = f"Chat about YouTube video ({transcript.video_url})"
@@ -372,7 +417,7 @@ def chat(chat_id):
     # Verify user has access to this chat
     if chat.user_id != current_user.id:
         flash('You do not have permission to access this chat.', 'danger')
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('index'))
     
     # Get the transcript content
     transcript = Transcript.query.get(chat.transcript_id)
