@@ -23,11 +23,46 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 def extract_video_id(url):
-    parsed = urlparse(url)
-    if parsed.hostname in ['youtu.be']:
-        return parsed.path[1:]
-    if parsed.path == '/watch':
-        return parse_qs(parsed.query).get('v', [None])[0]
+    """
+    Extract the YouTube video ID from various YouTube URL formats.
+    
+    Supports:
+    - Standard YouTube URLs: https://www.youtube.com/watch?v=VIDEO_ID
+    - Short YouTube URLs: https://youtu.be/VIDEO_ID
+    - Embed URLs: https://www.youtube.com/embed/VIDEO_ID
+    - Video URLs: https://www.youtube.com/v/VIDEO_ID
+    - Mobile URLs: https://m.youtube.com/watch?v=VIDEO_ID
+    - Playlist URLs: Also extracts video ID from playlist URLs
+    """
+    if not url:
+        return None
+        
+    # Clean the URL
+    url = url.strip()
+    
+    # Extract using urlparse
+    parsed_url = urlparse(url)
+    
+    # Check for youtu.be domain (short URLs)
+    if parsed_url.netloc in ['youtu.be']:
+        return parsed_url.path.strip('/')
+    
+    # For standard or mobile YouTube domains
+    if any(domain in parsed_url.netloc for domain in ['youtube.com', 'm.youtube.com', 'www.youtube.com']):
+        # Handle /watch path with v parameter
+        if parsed_url.path == '/watch':
+            query = parse_qs(parsed_url.query)
+            return query.get('v', [None])[0]
+            
+        # Handle /embed/ or /v/ paths
+        if '/embed/' in parsed_url.path or '/v/' in parsed_url.path:
+            path_parts = parsed_url.path.split('/')
+            # The ID should be after /embed/ or /v/
+            for i, part in enumerate(path_parts):
+                if part in ['embed', 'v'] and i < len(path_parts) - 1:
+                    return path_parts[i + 1]
+    
+    # If all checks fail, return None
     return None
 
 # Setup database tables
@@ -50,8 +85,33 @@ def extract():
         return redirect(url_for('index'))
 
     try:
-        transcript_list = YouTubeTranscriptApi.get_transcript(video_id, languages=['en'])
-        transcript_text = "\n".join([entry['text'] for entry in transcript_list])
+        # Try with English first
+        try:
+            transcript_list = YouTubeTranscriptApi.get_transcript(video_id, languages=['en'])
+        except NoTranscriptFound:
+            # Fallback: try to get any available transcript if English isn't available
+            transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)
+            
+            # Get the first available transcript
+            if transcript_list:
+                transcript = transcript_list[0]
+                transcript_list = transcript.fetch()
+            else:
+                raise NoTranscriptFound(f"No transcripts found for video ID: {video_id}")
+                
+        # Format the transcript with timestamps
+        formatted_entries = []
+        for entry in transcript_list:
+            # Convert timestamp to minutes:seconds format
+            timestamp_seconds = int(entry['start'])
+            minutes = timestamp_seconds // 60
+            seconds = timestamp_seconds % 60
+            timestamp = f"[{minutes:02d}:{seconds:02d}] "
+            
+            # Add formatted entry
+            formatted_entries.append(f"{timestamp}{entry['text']}")
+            
+        transcript_text = "\n".join(formatted_entries)
 
         # Save to database
         transcript = Transcript(video_url=video_url, content=transcript_text, user_id=current_user.id)
@@ -65,7 +125,11 @@ def extract():
     except TranscriptsDisabled:
         flash('Transcripts are disabled for this video.', 'warning')
     except Exception as e:
-        flash('An unexpected error occurred.', 'danger')
+        import traceback
+        error_details = traceback.format_exc()
+        print(f"Error extracting transcript: {str(e)}")
+        print(f"Traceback: {error_details}")
+        flash(f'An error occurred: {str(e)}', 'danger')
 
     return redirect(url_for('index'))
 
