@@ -13,17 +13,38 @@ from utils import get_chat_response, summarize_transcript
 # Flask app with hardcoded credentials for simplicity
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'c1a4f89c0e3e44b88ac44f3458f0d391'  # Hardcoded secret key
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')  # From environment (provided by Replit)
+
+# Determine if we're running on Vercel or locally
+is_vercel_env = 'VERCEL' in os.environ
+
+if is_vercel_env:
+    # When running on Vercel, use SQLite for simplicity
+    # Note: This is for demonstration purposes; for production, 
+    # you would want to set up a proper database service
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///transcripthub.db'
+    print("Running on Vercel with SQLite database")
+else:
+    # When running locally on Replit, use the PostgreSQL database
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
+    print("Running locally with PostgreSQL database")
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Configure connection pooling and other SQLAlchemy settings
-app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-    'pool_recycle': 280,  # Recycle connections before PostgreSQL's 300s timeout
-    'pool_timeout': 20,   # Wait up to 20 seconds for a connection
-    'pool_pre_ping': True,  # Verify connections before use to detect stale connections
-    'pool_size': 10,      # Maximum number of connections to keep
-    'max_overflow': 5     # Allow up to 5 connections beyond pool_size when needed
-}
+if not is_vercel_env:
+    # Connection pooling is more important for PostgreSQL than SQLite
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+        'pool_recycle': 280,  # Recycle connections before PostgreSQL's 300s timeout
+        'pool_timeout': 20,   # Wait up to 20 seconds for a connection
+        'pool_pre_ping': True,  # Verify connections before use to detect stale connections
+        'pool_size': 10,      # Maximum number of connections to keep
+        'max_overflow': 5     # Allow up to 5 connections beyond pool_size when needed
+    }
+else:
+    # Simpler settings for SQLite on Vercel
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+        'pool_pre_ping': True  # Only keep the connection verification
+    }
 
 # Initialize extensions
 db.init_app(app)
@@ -66,7 +87,8 @@ def safe_db_query(query_function, default_return=None, log_prefix="Database erro
 @login_manager.user_loader
 def load_user(user_id):
     def query():
-        return User.query.get(int(user_id))
+        # Updated to use modern SQLAlchemy API to fix deprecation warning
+        return db.session.get(User, int(user_id))
     
     return safe_db_query(
         query, 
