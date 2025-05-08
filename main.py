@@ -1,16 +1,22 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for, flash
+import json
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from youtube_transcript_api._api import YouTubeTranscriptApi
 from youtube_transcript_api._errors import NoTranscriptFound, TranscriptsDisabled
 from urllib.parse import urlparse, parse_qs
-from models import db, User, Transcript
+from models import db, User, Transcript, Chat, Message
+from utils import get_chat_response, summarize_transcript
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'c1a4f89c0e3e44b88ac44f3458f0d391'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
+app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'c1a4f89c0e3e44b88ac44f3458f0d391')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialize extensions
@@ -68,6 +74,12 @@ def extract_video_id(url):
 # Setup database tables
 with app.app_context():
     db.create_all()
+    
+    # Create a test user if it doesn't exist
+    if not User.query.filter_by(username='testuser').first():
+        test_user = User(username='testuser', password=generate_password_hash('password123'))
+        db.session.add(test_user)
+        db.session.commit()
 
 @app.route('/')
 @login_required
@@ -118,7 +130,18 @@ def extract():
         db.session.add(transcript)
         db.session.commit()
 
-        return render_template('result.html', transcript=transcript_text, video_url=video_url)
+        # Create an automatic summary
+        try:
+            summary = summarize_transcript(transcript_text)
+        except Exception as e:
+            print(f"Error generating summary: {str(e)}")
+            summary = "Summary could not be generated automatically."
+
+        return render_template('result.html', 
+                              transcript=transcript_text, 
+                              video_url=video_url, 
+                              transcript_id=transcript.id,
+                              summary=summary)
 
     except NoTranscriptFound:
         flash('No transcript found for this video.', 'warning')
@@ -173,6 +196,111 @@ def logout():
 def dashboard():
     transcripts = Transcript.query.filter_by(user_id=current_user.id).order_by(Transcript.created_at.desc()).all()
     return render_template('dashboard.html', transcripts=transcripts)
+
+@app.route('/create_chat/<int:transcript_id>', methods=['POST'])
+@login_required
+def create_chat(transcript_id):
+    """Create a new chat for a transcript and redirect to the chat page"""
+    transcript = Transcript.query.get_or_404(transcript_id)
+    
+    # Verify user has access to this transcript
+    if transcript.user_id != current_user.id:
+        flash('You do not have permission to access this transcript.', 'danger')
+        return redirect(url_for('dashboard'))
+    
+    # Create a new chat
+    title = f"Chat about YouTube video ({transcript.video_url})"
+    chat = Chat(
+        title=title,
+        user_id=current_user.id,
+        transcript_id=transcript_id
+    )
+    db.session.add(chat)
+    db.session.commit()
+    
+    return redirect(url_for('chat', chat_id=chat.id))
+
+@app.route('/chat/<int:chat_id>')
+@login_required
+def chat(chat_id):
+    """Show the chat interface for a specific chat"""
+    chat = Chat.query.get_or_404(chat_id)
+    
+    # Verify user has access to this chat
+    if chat.user_id != current_user.id:
+        flash('You do not have permission to access this chat.', 'danger')
+        return redirect(url_for('dashboard'))
+    
+    # Get the transcript content
+    transcript = Transcript.query.get(chat.transcript_id)
+    messages = Message.query.filter_by(chat_id=chat_id).order_by(Message.timestamp).all()
+    
+    return render_template(
+        'chat.html',
+        chat=chat,
+        transcript=transcript,
+        messages=messages
+    )
+
+@app.route('/api/send_message', methods=['POST'])
+@login_required
+def send_message():
+    """API endpoint to send a message and get an AI response"""
+    data = request.json
+    chat_id = data.get('chat_id')
+    content = data.get('content')
+    
+    if not chat_id or not content:
+        return jsonify({'error': 'Missing chat_id or content'}), 400
+    
+    # Verify the chat exists and belongs to the user
+    chat = Chat.query.get_or_404(chat_id)
+    if chat.user_id != current_user.id:
+        return jsonify({'error': 'You do not have permission to access this chat'}), 403
+    
+    # Get the transcript
+    transcript = Transcript.query.get(chat.transcript_id)
+    
+    # Save the user message
+    user_message = Message(
+        content=content,
+        role='user',
+        chat_id=chat_id
+    )
+    db.session.add(user_message)
+    db.session.commit()
+    
+    # Get all messages for context
+    messages = Message.query.filter_by(chat_id=chat_id).order_by(Message.timestamp).all()
+    formatted_messages = [{'role': msg.role, 'content': msg.content} for msg in messages]
+    
+    # Get AI response
+    try:
+        ai_response = get_chat_response(formatted_messages, transcript.content)
+        
+        # Save the AI response
+        assistant_message = Message(
+            content=ai_response,
+            role='assistant',
+            chat_id=chat_id
+        )
+        db.session.add(assistant_message)
+        db.session.commit()
+        
+        return jsonify({
+            'response': ai_response,
+            'message_id': assistant_message.id
+        })
+    except Exception as e:
+        print(f"Error getting AI response: {str(e)}")
+        return jsonify({'error': f'Error getting AI response: {str(e)}'}), 500
+
+@app.route('/chats')
+@login_required
+def chats():
+    """Show all chats for the current user"""
+    user_chats = Chat.query.filter_by(user_id=current_user.id).order_by(Chat.created_at.desc()).all()
+    return render_template('chats.html', chats=user_chats)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
