@@ -59,42 +59,80 @@
 
           <hr>
 
-          <!-- Transcript content with search functionality -->
-          <div class="mb-3">
-            <label for="searchTranscript" class="form-label fw-bold">
-              <i class="fas fa-search me-2"></i>Search Transcript
-            </label>
-            <input 
-              type="text" 
-              class="form-control" 
-              id="searchTranscript" 
-              placeholder="Type to search within transcript..."
-            >
-            <div class="form-text">
-              <span id="searchMatches">0</span> matches found
-            </div>
-          </div>
-
-          <div class="transcript-container">
-            <div class="d-flex justify-content-between mb-2">
-              <h5 class="fw-bold mb-3">
-                <i class="fas fa-closed-captioning me-2 text-primary"></i>Transcript Content
-              </h5>
-              <div class="transcript-controls">
-                <button class="btn btn-sm btn-outline-secondary me-1" id="copyTranscript">
-                  <i class="fas fa-copy"></i> Copy All
-                </button>
-                <div class="btn-group" role="group">
-                  <button class="btn btn-sm btn-outline-secondary" id="decreaseFont">
-                    <i class="fas fa-minus"></i>
-                  </button>
-                  <button class="btn btn-sm btn-outline-secondary" id="increaseFont">
-                    <i class="fas fa-plus"></i>
-                  </button>
+          <!-- Tab navigation -->
+          <ul class="nav nav-tabs mb-3" id="contentTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" id="transcript-tab" data-bs-toggle="tab" data-bs-target="#transcript-content" 
+                     type="button" role="tab" aria-controls="transcript-content" aria-selected="true">
+                <i class="fas fa-closed-captioning me-2"></i>Transcript
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="summary-tab" data-bs-toggle="tab" data-bs-target="#summary-content" 
+                     type="button" role="tab" aria-controls="summary-content" aria-selected="false">
+                <i class="fas fa-align-left me-2"></i>AI Summary
+              </button>
+            </li>
+          </ul>
+          
+          <!-- Tab content -->
+          <div class="tab-content" id="contentTabsContent">
+            <!-- Transcript Tab -->
+            <div class="tab-pane fade show active" id="transcript-content" role="tabpanel" aria-labelledby="transcript-tab">
+              <div class="mb-3">
+                <label for="searchTranscript" class="form-label fw-bold">
+                  <i class="fas fa-search me-2"></i>Search Transcript
+                </label>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  id="searchTranscript" 
+                  placeholder="Type to search within transcript..."
+                >
+                <div class="form-text">
+                  <span id="searchMatches">0</span> matches found
                 </div>
               </div>
+              
+              <div class="transcript-container">
+                <div class="d-flex justify-content-between mb-2">
+                  <h5 class="fw-bold mb-3">
+                    <i class="fas fa-closed-captioning me-2 text-primary"></i>Transcript Content
+                  </h5>
+                  <div class="transcript-controls">
+                    <button class="btn btn-sm btn-outline-secondary me-1" id="copyTranscript">
+                      <i class="fas fa-copy"></i> Copy All
+                    </button>
+                    <div class="btn-group" role="group">
+                      <button class="btn btn-sm btn-outline-secondary" id="decreaseFont">
+                        <i class="fas fa-minus"></i>
+                      </button>
+                      <button class="btn btn-sm btn-outline-secondary" id="increaseFont">
+                        <i class="fas fa-plus"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <pre id="transcriptContent" class="transcript">{{ transcript or 'No transcript available.' }}</pre>
+              </div>
             </div>
-            <pre id="transcriptContent" class="transcript">{{ transcript or 'No transcript available.' }}</pre>
+            
+            <!-- Summary Tab -->
+            <div class="tab-pane fade" id="summary-content" role="tabpanel" aria-labelledby="summary-tab">
+              {% if summary %}
+                <div class="card bg-light">
+                  <div class="card-body">
+                    <div class="ai-summary formatted-content">
+                      {{ summary|safe|replace('\n', '<br>')|replace('  ', '&nbsp;&nbsp;') }}
+                    </div>
+                  </div>
+                </div>
+              {% else %}
+                <div class="alert alert-info">
+                  <i class="fas fa-info-circle me-2"></i> No summary available for this transcript.
+                </div>
+              {% endif %}
+            </div>
           </div>
         </div>
       </div>
@@ -124,60 +162,10 @@
             </div>
           </div>
           
-          <!-- AI Summary -->
-          {% if summary %}
-          <div class="mb-4">
-            <h5 class="mb-3">
-              <i class="fas fa-align-left me-2 text-success"></i>AI Summary
-            </h5>
-            <div class="card bg-light">
-              <div class="card-body">
-                <div class="ai-summary">
-                  {{ summary|safe|replace('\n', '<br>')|replace('  ', '&nbsp;&nbsp;') }}
-                </div>
-              </div>
-            </div>
-          </div>
-          {% endif %}
-          
-          <div class="row mt-3">
-            <div class="col-md-4">
-              <div class="d-flex align-items-center mb-3">
-                <div class="me-3">
-                  <i class="fas fa-history fa-2x text-primary"></i>
-                </div>
-                <div>
-                  <h6 class="mb-1">View History</h6>
-                  <a href="{{ url_for('dashboard') }}" class="btn btn-sm btn-outline-primary">Go to Dashboard</a>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="d-flex align-items-center mb-3">
-                <div class="me-3">
-                  <i class="fas fa-plus-circle fa-2x text-success"></i>
-                </div>
-                <div>
-                  <h6 class="mb-1">Extract Another</h6>
-                  <a href="{{ url_for('index') }}" class="btn btn-sm btn-outline-success">New Transcript</a>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="d-flex align-items-center mb-3">
-                <div class="me-3">
-                  <i class="fas fa-download fa-2x text-info"></i>
-                </div>
-                <div>
-                  <h6 class="mb-1">Save Content</h6>
-                  <a href="#" onclick="document.getElementById('downloadLink').click(); return false;" class="btn btn-sm btn-outline-info">Download Text</a>
-                  <a id="downloadLink" href="{{ url_for('index') }}" download="transcript.txt" 
-                    onclick="this.href='data:text/plain;charset=utf-8,' + encodeURIComponent(`{{ transcript }}`)" 
-                    style="display: none;">Hidden Download Link</a>
-                </div>
-              </div>
-            </div>
-          </div>
+          <!-- Hidden download link for potential future use -->
+          <a id="downloadLink" href="{{ url_for('index') }}" download="transcript.txt" 
+             onclick="this.href='data:text/plain;charset=utf-8,' + encodeURIComponent(`{{ transcript }}`)" 
+             style="display: none;">Hidden Download Link</a>
         </div>
       </div>
     </div>

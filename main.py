@@ -82,8 +82,16 @@ with app.app_context():
         db.session.commit()
 
 @app.route('/')
+def landing():
+    """Landing page with pricing and features"""
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
+    return render_template('landing.html')
+
+@app.route('/home')
 @login_required
 def index():
+    """Home page for authenticated users"""
     return render_template('index.html')
 
 @app.route('/extract', methods=['POST'])
@@ -94,7 +102,7 @@ def extract():
 
     if not video_id:
         flash('Invalid YouTube URL provided.', 'danger')
-        return redirect(url_for('index'))
+        return redirect(url_for('dashboard'))
 
     try:
         # Try with English first
@@ -154,7 +162,7 @@ def extract():
         print(f"Traceback: {error_details}")
         flash(f'An error occurred: {str(e)}', 'danger')
 
-    return redirect(url_for('index'))
+    return redirect(url_for('dashboard'))
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -180,7 +188,7 @@ def login():
         user = User.query.filter_by(username=request.form['username']).first()
         if user and check_password_hash(user.password, request.form['password']):
             login_user(user)
-            return redirect(url_for('index'))
+            return redirect(url_for('dashboard'))
         flash('Invalid username or password.', 'danger')
 
     return render_template('login.html')
