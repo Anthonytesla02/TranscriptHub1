@@ -19,14 +19,63 @@ app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'c1a4f89c0e3e44b88ac44f
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+# Configure connection pooling and other SQLAlchemy settings
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    'pool_recycle': 280,  # Recycle connections before PostgreSQL's 300s timeout
+    'pool_timeout': 20,   # Wait up to 20 seconds for a connection
+    'pool_pre_ping': True,  # Verify connections before use to detect stale connections
+    'pool_size': 10,      # Maximum number of connections to keep
+    'max_overflow': 5     # Allow up to 5 connections beyond pool_size when needed
+}
+
 # Initialize extensions
 db.init_app(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
+# Close database sessions after each request
+@app.teardown_request
+def shutdown_session(exception=None):
+    db.session.remove()
+
+def safe_db_query(query_function, default_return=None, log_prefix="Database error"):
+    """
+    Executes a database query function safely with error handling
+    
+    Args:
+        query_function: A function that executes the actual database query
+        default_return: The value to return if the query fails
+        log_prefix: Prefix for error log messages
+        
+    Returns:
+        The result of the query or default_return if it fails
+    """
+    try:
+        return query_function()
+    except Exception as e:
+        import traceback
+        error_details = traceback.format_exc()
+        print(f"{log_prefix}: {str(e)}")
+        print(f"Traceback: {error_details}")
+        
+        # Try to rollback the session
+        try:
+            db.session.rollback()
+        except:
+            pass
+            
+        return default_return
+
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    def query():
+        return User.query.get(int(user_id))
+    
+    return safe_db_query(
+        query, 
+        default_return=None, 
+        log_prefix="Error loading user"
+    )
 
 def extract_video_id(url):
     """
@@ -71,15 +120,45 @@ def extract_video_id(url):
     # If all checks fail, return None
     return None
 
-# Setup database tables
+# Setup database tables and test connection
 with app.app_context():
-    db.create_all()
-    
-    # Create a test user if it doesn't exist
-    if not User.query.filter_by(username='testuser').first():
-        test_user = User(username='testuser', password=generate_password_hash('password123'))
-        db.session.add(test_user)
-        db.session.commit()
+    try:
+        # Create all tables if they don't exist
+        db.create_all()
+        
+        # Test the database connection with a simple query
+        def check_db_connection():
+            from sqlalchemy import text
+            return db.session.execute(text("SELECT 1")).fetchone() is not None
+            
+        if not check_db_connection():
+            print("Warning: Database connection check failed.")
+            
+        # Create a test user if it doesn't exist
+        def create_test_user():
+            if not User.query.filter_by(username='testuser').first():
+                test_user = User(username='testuser', password=generate_password_hash('password123'))
+                db.session.add(test_user)
+                db.session.commit()
+                return True
+            return False
+            
+        user_created = safe_db_query(
+            create_test_user,
+            default_return=False,
+            log_prefix="Error creating test user"
+        )
+        if user_created:
+            print("Test user created successfully.")
+            
+    except Exception as e:
+        import traceback
+        error_details = traceback.format_exc()
+        print(f"Error during database initialization: {str(e)}")
+        print(f"Traceback: {error_details}")
+        
+        # Don't fail the application startup, log the error and continue
+        print("Warning: Application started but database initialization had errors.")
 
 @app.route('/')
 def landing():
@@ -167,29 +246,69 @@ def extract():
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
-        username = request.form['username']
-        password = generate_password_hash(request.form['password'])
+        try:
+            username = request.form['username']
+            password = generate_password_hash(request.form['password'])
 
-        if User.query.filter_by(username=username).first():
-            flash('Username already exists.', 'warning')
-            return redirect(url_for('signup'))
+            # Check if username exists
+            def check_username():
+                return User.query.filter_by(username=username).first()
+            
+            existing_user = safe_db_query(
+                check_username,
+                default_return=None,
+                log_prefix="Error checking username"
+            )
+            
+            if existing_user:
+                flash('Username already exists.', 'warning')
+                return redirect(url_for('signup'))
 
-        user = User(username=username, password=password)
-        db.session.add(user)
-        db.session.commit()
-        flash('Account created! Please log in.', 'success')
-        return redirect(url_for('login'))
+            # Create new user
+            user = User(username=username, password=password)
+            
+            def save_user():
+                db.session.add(user)
+                db.session.commit()
+                return True
+                
+            success = safe_db_query(
+                save_user,
+                default_return=False,
+                log_prefix="Error creating new user"
+            )
+            
+            if success:
+                flash('Account created! Please log in.', 'success')
+                return redirect(url_for('login'))
+            else:
+                flash('Error creating account. Please try again.', 'danger')
+        except Exception as e:
+            flash(f'An error occurred: {str(e)}', 'danger')
 
     return render_template('signup.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        user = User.query.filter_by(username=request.form['username']).first()
-        if user and check_password_hash(user.password, request.form['password']):
-            login_user(user)
-            return redirect(url_for('dashboard'))
-        flash('Invalid username or password.', 'danger')
+        try:
+            user = User.query.filter_by(username=request.form['username']).first()
+            if user and check_password_hash(user.password, request.form['password']):
+                login_user(user)
+                return redirect(url_for('dashboard'))
+            flash('Invalid username or password.', 'danger')
+        except Exception as e:
+            import traceback
+            error_details = traceback.format_exc()
+            print(f"Database error during login: {str(e)}")
+            print(f"Traceback: {error_details}")
+            flash('A database connection error occurred. Please try again.', 'danger')
+            
+            # Try to reconnect to the database
+            try:
+                db.session.rollback()  # Roll back any failed transaction
+            except:
+                pass  # If rollback fails, we'll still want to render the login page
 
     return render_template('login.html')
 
@@ -197,13 +316,29 @@ def login():
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for('login'))
+    return redirect(url_for('landing'))
 
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    transcripts = Transcript.query.filter_by(user_id=current_user.id).order_by(Transcript.created_at.desc()).all()
-    return render_template('dashboard.html', transcripts=transcripts)
+    try:
+        transcripts = Transcript.query.filter_by(user_id=current_user.id).order_by(Transcript.created_at.desc()).all()
+        return render_template('dashboard.html', transcripts=transcripts)
+    except Exception as e:
+        import traceback
+        error_details = traceback.format_exc()
+        print(f"Database error in dashboard: {str(e)}")
+        print(f"Traceback: {error_details}")
+        flash('Unable to load your transcripts. Database connection issue.', 'danger')
+        
+        # Try to rollback the session
+        try:
+            db.session.rollback()
+        except:
+            pass
+            
+        # Return empty transcripts list
+        return render_template('dashboard.html', transcripts=[])
 
 @app.route('/create_chat/<int:transcript_id>', methods=['POST'])
 @login_required

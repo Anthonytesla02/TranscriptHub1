@@ -29,7 +29,7 @@
     <!-- Navigation Bar -->
     <nav class="navbar navbar-expand-lg sticky-top">
       <div class="container">
-        <a class="navbar-brand" href="{{ url_for('index') }}">
+        <a class="navbar-brand" href="{% if current_user.is_authenticated %}{{ url_for('dashboard') }}{% else %}{{ url_for('landing') }}{% endif %}">
           <i class="fas fa-closed-captioning brand-icon"></i> TranscriptHub
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
@@ -40,13 +40,8 @@
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
             {% if current_user.is_authenticated %}
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('index') }}">
-                <i class="fas fa-home"></i> Home
-              </a>
-            </li>
-            <li class="nav-item">
               <a class="nav-link" href="{{ url_for('dashboard') }}">
-                <i class="fas fa-list"></i> My Transcripts
+                <i class="fas fa-home"></i> Home
               </a>
             </li>
             <li class="nav-item">
@@ -71,7 +66,8 @@
                 <ul class="dropdown-menu dropdown-menu-end">
                   <li class="dropdown-item disabled">Signed in as <strong>{{ current_user.username }}</strong></li>
                   <li><hr class="dropdown-divider"></li>
-                  <li><a class="dropdown-item" href="{{ url_for('dashboard') }}"><i class="fas fa-history me-2"></i>History</a></li>
+                  <li><a class="dropdown-item" href="{{ url_for('dashboard') }}"><i class="fas fa-list me-2"></i>My Transcripts</a></li>
+                  <li><a class="dropdown-item" href="{{ url_for('chats') }}"><i class="fas fa-robot me-2"></i>AI Chats</a></li>
                   <li><a class="dropdown-item" href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
                 </ul>
               </div>
