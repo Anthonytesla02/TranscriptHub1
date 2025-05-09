@@ -1,45 +1,50 @@
 # TranscriptHub
 
-A web application that extracts transcripts from YouTube videos and provides an AI-powered chatbot interface to interact with the content.
+A web application that extracts YouTube video transcripts and allows users to chat with AI about the content.
 
 ## Features
 
 - Extract transcripts from YouTube videos
-- Automatically generate summaries of video content
-- Chat with an AI assistant about the video content
+- Chat with AI about the video content
+- Summarize video transcripts
 - User authentication system
-- Mobile-responsive design
+- Persistent chat history
 
 ## Local Development
 
 1. Clone the repository
-2. Install dependencies: `pip install -r requirements.txt`
-3. Run the application: `python main.py`
+2. Install dependencies:
+   ```
+   pip install -r requirements.txt
+   ```
+3. Set up environment variables:
+   - Copy `.env.example` to `.env`
+   - Fill in required values (especially the Mistral API key)
+4. Run the application:
+   ```
+   python main.py
+   ```
 
-## Deployment on Vercel
+## Deploying to Vercel
 
-This application is configured to deploy on Vercel. Follow these steps to deploy:
-
-1. Fork or clone this repository to your GitHub account
-2. Connect your Vercel account to your GitHub repository
+1. Push your code to GitHub
+2. Connect your GitHub repository to Vercel
 3. Set up the following environment variables in Vercel:
-   - `MISTRAL_API_KEY`: Your Mistral AI API key
+   - `MISTRAL_API_KEY`: Your Mistral API key
+   - `SECRET_KEY`: A secure random string for Flask sessions
+   - `FLASK_ENV`: Set to `production`
+4. Deploy!
 
-4. Deploy the application
+## Important Notes for Vercel Deployment
 
-## Environment Variables
+- The application uses SQLite in Vercel's serverless environment for simplicity
+- For production use with higher traffic, consider using a proper database service
+- Make sure to set your Mistral API key in Vercel's environment variables
 
-- `MISTRAL_API_KEY`: API key for Mistral AI (required for production)
-- `DATABASE_URL`: PostgreSQL database URL (auto-configured in Replit)
-
-## Tech Stack
+## Libraries Used
 
 - Flask: Web framework
-- SQLAlchemy: Database ORM
-- Mistral AI: Large language model for chat and summarization
-- YouTube Transcript API: For extracting video transcripts
-- PostgreSQL (local) / SQLite (Vercel): Database
-
-## License
-
-MIT
+- Flask-SQLAlchemy: ORM for database operations
+- Flask-Login: User authentication
+- youtube-transcript-api: Extract YouTube transcripts
+- Mistral AI: AI model for chat functionality

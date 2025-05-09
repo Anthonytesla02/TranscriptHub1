@@ -7,6 +7,11 @@ from config import get_mistral_api_key, MISTRAL_API_URL
 api_key = get_mistral_api_key()
 api_url = MISTRAL_API_URL
 
+# Add error handling for missing API key
+if not api_key:
+    print("WARNING: No Mistral API key available - API calls will fail")
+    # We don't set a fallback here to avoid silent failures in production
+
 def get_chat_response(messages, transcript_content, model="mistral-large-latest"):
     """
     Get a response from the Mistral AI model based on user messages and transcript context.
