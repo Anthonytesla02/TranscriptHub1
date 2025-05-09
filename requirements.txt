@@ -22,14 +22,3 @@ requests
 trafilatura
 werkzeug
 youtube-transcript-api
-Flask
-Flask-Login
-Flask-SQLAlchemy
-gunicorn
-mistralai
-psycopg2-binary
-python-dotenv
-requests
-trafilatura
-werkzeug
-youtube-transcript-api

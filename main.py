@@ -9,42 +9,26 @@ from youtube_transcript_api._errors import NoTranscriptFound, TranscriptsDisable
 from urllib.parse import urlparse, parse_qs
 from models import db, User, Transcript, Chat, Message
 from utils import get_chat_response, summarize_transcript
-import config
 
-# Flask app configuration
+# Flask app with hardcoded credentials for simplicity
 app = Flask(__name__)
-app.config['SECRET_KEY'] = config.SECRET_KEY
-app.config['SQLALCHEMY_DATABASE_URI'] = config.SQLALCHEMY_DATABASE_URI
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = config.SQLALCHEMY_TRACK_MODIFICATIONS
-
-# Log the environment we're running in
-if config.IS_VERCEL:
-    print(f"Running on Vercel with {config.DATABASE_TYPE} database")
-else:
-    print(f"Running locally with {config.DATABASE_TYPE} database")
+app.config['SECRET_KEY'] = 'c1a4f89c0e3e44b88ac44f3458f0d391'  # Hardcoded secret key
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')  # From environment (provided by Replit)
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Configure connection pooling and other SQLAlchemy settings
-if not config.IS_VERCEL:
-    # Connection pooling is more important for PostgreSQL than SQLite
-    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-        'pool_recycle': 280,  # Recycle connections before PostgreSQL's 300s timeout
-        'pool_timeout': 20,   # Wait up to 20 seconds for a connection
-        'pool_pre_ping': True,  # Verify connections before use to detect stale connections
-        'pool_size': 10,      # Maximum number of connections to keep
-        'max_overflow': 5     # Allow up to 5 connections beyond pool_size when needed
-    }
-else:
-    # Simpler settings for SQLite on Vercel
-    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-        'pool_pre_ping': True  # Only keep the connection verification
-    }
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    'pool_recycle': 280,  # Recycle connections before PostgreSQL's 300s timeout
+    'pool_timeout': 20,   # Wait up to 20 seconds for a connection
+    'pool_pre_ping': True,  # Verify connections before use to detect stale connections
+    'pool_size': 10,      # Maximum number of connections to keep
+    'max_overflow': 5     # Allow up to 5 connections beyond pool_size when needed
+}
 
 # Initialize extensions
 db.init_app(app)
 login_manager = LoginManager(app)
-# Set the login view to redirect to when login is required
-# This is a string attribute, not None, so we need to set it this way
-setattr(login_manager, 'login_view', 'login')
+login_manager.login_view = 'login'
 
 # Close database sessions after each request
 @app.teardown_request
@@ -82,8 +66,7 @@ def safe_db_query(query_function, default_return=None, log_prefix="Database erro
 @login_manager.user_loader
 def load_user(user_id):
     def query():
-        # Updated to use modern SQLAlchemy API to fix deprecation warning
-        return db.session.get(User, int(user_id))
+        return User.query.get(int(user_id))
     
     return safe_db_query(
         query, 
@@ -249,23 +232,14 @@ def extract():
             transcript_list = YouTubeTranscriptApi.get_transcript(video_id, languages=['en'])
         except NoTranscriptFound:
             # Fallback: try to get any available transcript if English isn't available
-            try:
-                # Get list of available transcripts
-                transcript_list_obj = YouTubeTranscriptApi.list_transcripts(video_id)
-                
-                # Get available languages
-                available_transcripts = list(transcript_list_obj)
-                
-                if available_transcripts:
-                    # Get the first available transcript
-                    first_transcript = available_transcripts[0]
-                    transcript_list = first_transcript.fetch()
-                else:
-                    raise NoTranscriptFound(f"No transcripts found for video ID: {video_id}")
-            except Exception as e:
-                # Handle any errors in the transcript API
-                print(f"Error fetching transcript: {str(e)}")
-                raise NoTranscriptFound(f"Could not fetch transcript: {str(e)}")
+            transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)
+            
+            # Get the first available transcript
+            if transcript_list:
+                transcript = transcript_list[0]
+                transcript_list = transcript.fetch()
+            else:
+                raise NoTranscriptFound(f"No transcripts found for video ID: {video_id}")
                 
         # Format the transcript with timestamps
         formatted_entries = []
@@ -446,7 +420,7 @@ def chat(chat_id):
         return redirect(url_for('index'))
     
     # Get the transcript content
-    transcript = Transcript.query.get_or_404(chat.transcript_id)
+    transcript = Transcript.query.get(chat.transcript_id)
     messages = Message.query.filter_by(chat_id=chat_id).order_by(Message.timestamp).all()
     
     return render_template(
@@ -460,17 +434,11 @@ def chat(chat_id):
 @login_required
 def send_message():
     """API endpoint to send a message and get an AI response"""
-    if not request.is_json:
-        return jsonify({'error': 'Request must be JSON'}), 400
-        
-    data = request.get_json()
-    if not data:
-        return jsonify({'error': 'Invalid JSON data'}), 400
-        
+    data = request.json
     chat_id = data.get('chat_id')
-    message_content = data.get('content')
+    content = data.get('content')
     
-    if not chat_id or not message_content:
+    if not chat_id or not content:
         return jsonify({'error': 'Missing chat_id or content'}), 400
     
     # Verify the chat exists and belongs to the user
@@ -479,11 +447,11 @@ def send_message():
         return jsonify({'error': 'You do not have permission to access this chat'}), 403
     
     # Get the transcript
-    transcript = Transcript.query.get_or_404(chat.transcript_id)
+    transcript = Transcript.query.get(chat.transcript_id)
     
     # Save the user message
     user_message = Message(
-        content=message_content,
+        content=content,
         role='user',
         chat_id=chat_id
     )

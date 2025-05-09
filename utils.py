@@ -1,16 +1,10 @@
 import os
 import requests
 import json
-from config import get_mistral_api_key, MISTRAL_API_URL
 
-# Get API key from config
-api_key = get_mistral_api_key()
-api_url = MISTRAL_API_URL
-
-# Add error handling for missing API key
-if not api_key:
-    print("WARNING: No Mistral API key available - API calls will fail")
-    # We don't set a fallback here to avoid silent failures in production
+# Hardcoded credentials for simplicity
+api_key = "nCmZyPuNmY8PfYzg8NyjAE8BpQQKAftB"
+api_url = "https://api.mistral.ai/v1/chat/completions"
 
 def get_chat_response(messages, transcript_content, model="mistral-large-latest"):
     """

@@ -1,0 +1,103 @@
+13:49:00
+Time
+Status
+Host
+Request
+Messages
+May 09 13:48:35.06
+GET
+500
+transcripthub1-2xurhl32q-anthony-teslas-projects.vercel.app
+/favicon.png
+Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> Using Mistral API key from environment variables Running on Vercel with sqlite database __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/wsgi.py", line 4, in <module> from main import app, db File "/var/task/main.py", line 43, in <module> db.init_app(app) File "/var/task/flask_sqlalchemy/extension.py", line 373, in init_app self._apply_driver_defaults(options, app) File "/var/task/flask_sqlalchemy/extension.py", line 627, in _apply_driver_defaults os.makedirs(app.instance_path, exist_ok=True) File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/var/task/instance' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+May 09 13:48:30.52
+GET
+500
+transcripthub1-2xurhl32q-anthony-teslas-projects.vercel.app
+/favicon.png
+Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> Using Mistral API key from environment variables Running on Vercel with sqlite database __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/wsgi.py", line 4, in <module> from main import app, db File "/var/task/main.py", line 43, in <module> db.init_app(app) File "/var/task/flask_sqlalchemy/extension.py", line 373, in init_app self._apply_driver_defaults(options, app) File "/var/task/flask_sqlalchemy/extension.py", line 627, in _apply_driver_defaults os.makedirs(app.instance_path, exist_ok=True) File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/var/task/instance' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+May 09 13:48:26.94
+GET
+500
+transcripthub1-2xurhl32q-anthony-teslas-projects.vercel.app
+/favicon.png
+Using Mistral API key from environment variables Running on Vercel with sqlite database Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/wsgi.py", line 4, in <module> from main import app, db File "/var/task/main.py", line 43, in <module> db.init_app(app) File "/var/task/flask_sqlalchemy/extension.py", line 373, in init_app self._apply_driver_defaults(options, app) File "/var/task/flask_sqlalchemy/extension.py", line 627, in _apply_driver_defaults os.makedirs(app.instance_path, exist_ok=True) File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/var/task/instance' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+May 09 13:48:24.74
+GET
+500
+transcripthub1-2xurhl32q-anthony-teslas-projects.vercel.app
+/favicon.ico
+Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> Using Mistral API key from environment variables Running on Vercel with sqlite database __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/wsgi.py", line 4, in <module> from main import app, db File "/var/task/main.py", line 43, in <module> db.init_app(app) File "/var/task/flask_sqlalchemy/extension.py", line 373, in init_app self._apply_driver_defaults(options, app) File "/var/task/flask_sqlalchemy/extension.py", line 627, in _apply_driver_defaults os.makedirs(app.instance_path, exist_ok=True) File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/var/task/instance' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+May 09 13:48:20.17
+GET
+500
+transcripthub1-2xurhl32q-anthony-teslas-projects.vercel.app
+/favicon.ico
+Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> Using Mistral API key from environment variables Running on Vercel with sqlite database __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/wsgi.py", line 4, in <module> from main import app, db File "/var/task/main.py", line 43, in <module> db.init_app(app) File "/var/task/flask_sqlalchemy/extension.py", line 373, in init_app self._apply_driver_defaults(options, app) File "/var/task/flask_sqlalchemy/extension.py", line 627, in _apply_driver_defaults os.makedirs(app.instance_path, exist_ok=True) File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/var/task/instance' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+May 09 13:48:16.50
+GET
+500
+transcripthub1-2xurhl32q-anthony-teslas-projects.vercel.app
+/favicon.ico
+Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> Using Mistral API key from environment variables Running on Vercel with sqlite database __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/wsgi.py", line 4, in <module> from main import app, db File "/var/task/main.py", line 43, in <module> db.init_app(app) File "/var/task/flask_sqlalchemy/extension.py", line 373, in init_app self._apply_driver_defaults(options, app) File "/var/task/flask_sqlalchemy/extension.py", line 627, in _apply_driver_defaults os.makedirs(app.instance_path, exist_ok=True) File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/var/task/instance' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+May 09 13:48:14.89
+GET
+500
+transcripthub1-2xurhl32q-anthony-teslas-projects.vercel.app
+/
+Using Mistral API key from environment variables Running on Vercel with sqlite database Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/wsgi.py", line 4, in <module> from main import app, db File "/var/task/main.py", line 43, in <module> db.init_app(app) File "/var/task/flask_sqlalchemy/extension.py", line 373, in init_app self._apply_driver_defaults(options, app) File "/var/task/flask_sqlalchemy/extension.py", line 627, in _apply_driver_defaults os.makedirs(app.instance_path, exist_ok=True) File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/var/task/instance' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+May 09 13:48:12.48
+GET
+500
+transcripthub1-2xurhl32q-anthony-teslas-projects.vercel.app
+/
+Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> Using Mistral API key from environment variables Running on Vercel with sqlite database __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/wsgi.py", line 4, in <module> from main import app, db File "/var/task/main.py", line 43, in <module> db.init_app(app) File "/var/task/flask_sqlalchemy/extension.py", line 373, in init_app self._apply_driver_defaults(options, app) File "/var/task/flask_sqlalchemy/extension.py", line 627, in _apply_driver_defaults os.makedirs(app.instance_path, exist_ok=True) File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/var/task/instance' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+May 09 13:47:57.08
+GET
+500
+transcripthub1-2xurhl32q-anthony-teslas-projects.vercel.app
+/favicon.ico
+Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> Using Mistral API key from environment variables Running on Vercel with sqlite database __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/wsgi.py", line 4, in <module> from main import app, db File "/var/task/main.py", line 43, in <module> db.init_app(app) File "/var/task/flask_sqlalchemy/extension.py", line 373, in init_app self._apply_driver_defaults(options, app) File "/var/task/flask_sqlalchemy/extension.py", line 627, in _apply_driver_defaults os.makedirs(app.instance_path, exist_ok=True) File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/var/task/instance' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+May 09 13:47:54.90
+GET
+500
+transcripthub1-2xurhl32q-anthony-teslas-projects.vercel.app
+/
+Using Mistral API key from environment variables Running on Vercel with sqlite database Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/wsgi.py", line 4, in <module> from main import app, db File "/var/task/main.py", line 43, in <module> db.init_app(app) File "/var/task/flask_sqlalchemy/extension.py", line 373, in init_app self._apply_driver_defaults(options, app) File "/var/task/flask_sqlalchemy/extension.py", line 627, in _apply_driver_defaults os.makedirs(app.instance_path, exist_ok=True) File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/var/task/instance' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+May 09 13:47:53.33
+GET
+500
+transcripthub1-2xurhl32q-anthony-teslas-projects.vercel.app
+/favicon.ico
+Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> Using Mistral API key from environment variables Running on Vercel with sqlite database __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/wsgi.py", line 4, in <module> from main import app, db File "/var/task/main.py", line 43, in <module> db.init_app(app) File "/var/task/flask_sqlalchemy/extension.py", line 373, in init_app self._apply_driver_defaults(options, app) File "/var/task/flask_sqlalchemy/extension.py", line 627, in _apply_driver_defaults os.makedirs(app.instance_path, exist_ok=True) File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/var/task/instance' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+May 09 13:47:51.00
+GET
+500
+transcripthub1-2xurhl32q-anthony-teslas-projects.vercel.app
+/favicon.ico
+Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> Using Mistral API key from environment variables Running on Vercel with sqlite database __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/wsgi.py", line 4, in <module> from main import app, db File "/var/task/main.py", line 43, in <module> db.init_app(app) File "/var/task/flask_sqlalchemy/extension.py", line 373, in init_app self._apply_driver_defaults(options, app) File "/var/task/flask_sqlalchemy/extension.py", line 627, in _apply_driver_defaults os.makedirs(app.instance_path, exist_ok=True) File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/var/task/instance' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+May 09 13:47:48.41
+GET
+500
+transcripthub1-2xurhl32q-anthony-teslas-projects.vercel.app
+/
+Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> Using Mistral API key from environment variables Running on Vercel with sqlite database __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/wsgi.py", line 4, in <module> from main import app, db File "/var/task/main.py", line 43, in <module> db.init_app(app) File "/var/task/flask_sqlalchemy/extension.py", line 373, in init_app self._apply_driver_defaults(options, app) File "/var/task/flask_sqlalchemy/extension.py", line 627, in _apply_driver_defaults os.makedirs(app.instance_path, exist_ok=True) File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/var/task/instance' Python process exited with exit status: 1. The logs above can help with debugging the issue. Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> Using Mistral API key from environment variables Running on Vercel with sqlite database __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/wsgi.py", line 4, in <module> from main import app, db File "/var/task/main.py", line 43, in <module> db.init_app(app) File "/var/task/flask_sqlalchemy/extension.py", line 373, in init_app self._apply_driver_defaults(options, app) File "/var/task/flask_sqlalchemy/extension.py", line 627, in _apply_driver_defaults os.makedirs(app.instance_path, exist_ok=True) File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/var/task/instance' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+May 09 13:47:48.31
+GET
+500
+transcripthub1-2xurhl32q-anthony-teslas-projects.vercel.app
+/
+Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> Using Mistral API key from environment variables Running on Vercel with sqlite database __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/wsgi.py", line 4, in <module> from main import app, db File "/var/task/main.py", line 43, in <module> db.init_app(app) File "/var/task/flask_sqlalchemy/extension.py", line 373, in init_app self._apply_driver_defaults(options, app) File "/var/task/flask_sqlalchemy/extension.py", line 627, in _apply_driver_defaults os.makedirs(app.instance_path, exist_ok=True) File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/var/task/instance' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+May 09 13:47:44.34
+GET
+500
+transcripthub1-2xurhl32q-anthony-teslas-projects.vercel.app
+/
+Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> Using Mistral API key from environment variables Running on Vercel with sqlite database __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/wsgi.py", line 4, in <module> from main import app, db File "/var/task/main.py", line 43, in <module> db.init_app(app) File "/var/task/flask_sqlalchemy/extension.py", line 373, in init_app self._apply_driver_defaults(options, app) File "/var/task/flask_sqlalchemy/extension.py", line 627, in _apply_driver_defaults os.makedirs(app.instance_path, exist_ok=True) File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/var/task/instance' Python process exited with exit status: 1. The logs above can help with debugging the issue. Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> Using Mistral API key from environment variables Running on Vercel with sqlite database __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/wsgi.py", line 4, in <module> from main import app, db File "/var/task/main.py", line 43, in <module> db.init_app(app) File "/var/task/flask_sqlalchemy/extension.py", line 373, in init_app self._apply_driver_defaults(options, app) File "/var/task/flask_sqlalchemy/extension.py", line 627, in _apply_driver_defaults os.makedirs(app.instance_path, exist_ok=True) File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/var/task/instance' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+May 09 13:47:44.25
+GET
+500
+transcripthub1-2xurhl32q-anthony-teslas-projects.vercel.app
+/
+Using Mistral API key from environment variables Running on Vercel with sqlite database Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/wsgi.py", line 4, in <module> from main import app, db File "/var/task/main.py", line 43, in <module> db.init_app(app) File "/var/task/flask_sqlalchemy/extension.py", line 373, in init_app self._apply_driver_defaults(options, app) File "/var/task/flask_sqlalchemy/extension.py", line 627, in _apply_driver_defaults os.makedirs(app.instance_path, exist_ok=True) File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/var/task/instance' Python process exited with exit status: 1. The logs above can help with debugging the issue. Using Mistral API key from environment variables Running on Vercel with sqlite database Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/wsgi.py", line 4, in <module> from main import app, db File "/var/task/main.py", line 43, in <module> db.init_app(app) File "/var/task/flask_sqlalchemy/extension.py", line 373, in init_app self._apply_driver_defaults(options, app) File "/var/task/flask_sqlalchemy/extension.py", line 627, in _apply_driver_defaults os.makedirs(app.instance_path, exist_ok=True) File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/var/task/instance' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+No more logs to show within selected timeline
