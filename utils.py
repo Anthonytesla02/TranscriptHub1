@@ -2,8 +2,8 @@ import os
 import requests
 import json
 
-# Hardcoded credentials for simplicity
-api_key = "nCmZyPuNmY8PfYzg8NyjAE8BpQQKAftB"
+# Get credentials from environment variables (with fallback for development)
+api_key = os.environ.get('MISTRAL_API_KEY', "nCmZyPuNmY8PfYzg8NyjAE8BpQQKAftB")
 api_url = "https://api.mistral.ai/v1/chat/completions"
 
 def get_chat_response(messages, transcript_content, model="mistral-large-latest"):

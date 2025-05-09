@@ -22,3 +22,12 @@ requests
 trafilatura
 werkzeug
 youtube-transcript-api
+flask
+flask-login
+flask-sqlalchemy
+gunicorn
+psycopg2-binary
+requests
+SQLAlchemy
+werkzeug
+youtube-transcript-api

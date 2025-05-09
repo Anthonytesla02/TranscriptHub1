@@ -1,0 +1,34 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "wsgi.py",
+      "use": "@vercel/python",
+      "config": {
+        "maxLambdaSize": "15mb",
+        "runtime": "python3.9",
+        "buildCommand": "./build.sh"
+      }
+    },
+    {
+      "src": "static/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/static/(.*)",
+      "dest": "/static/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/wsgi.py"
+    }
+  ],
+  "env": {
+    "PYTHONUNBUFFERED": "1",
+    "SQLALCHEMY_DATABASE_URI": "sqlite:///.vercel/storage/app.db",
+    "MISTRAL_API_KEY": "nCmZyPuNmY8PfYzg8NyjAE8BpQQKAftB",
+    "FLASK_SECRET_KEY": "c1a4f89c0e3e44b88ac44f3458f0d391"
+  }
+}

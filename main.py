@@ -10,10 +10,10 @@ from urllib.parse import urlparse, parse_qs
 from models import db, User, Transcript, Chat, Message
 from utils import get_chat_response, summarize_transcript
 
-# Flask app with hardcoded credentials for simplicity
+# Flask app configuration using environment variables with development fallbacks
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'c1a4f89c0e3e44b88ac44f3458f0d391'  # Hardcoded secret key
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')  # From environment (provided by Replit)
+app.config['SECRET_KEY'] = os.environ.get('FLASK_SECRET_KEY', 'c1a4f89c0e3e44b88ac44f3458f0d391')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL') or os.environ.get('SQLALCHEMY_DATABASE_URI')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Configure connection pooling and other SQLAlchemy settings
