@@ -9,29 +9,22 @@ from youtube_transcript_api._errors import NoTranscriptFound, TranscriptsDisable
 from urllib.parse import urlparse, parse_qs
 from models import db, User, Transcript, Chat, Message
 from utils import get_chat_response, summarize_transcript
+import config
 
-# Flask app with hardcoded credentials for simplicity
+# Flask app configuration
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'c1a4f89c0e3e44b88ac44f3458f0d391'  # Hardcoded secret key
+app.config['SECRET_KEY'] = config.SECRET_KEY
+app.config['SQLALCHEMY_DATABASE_URI'] = config.SQLALCHEMY_DATABASE_URI
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = config.SQLALCHEMY_TRACK_MODIFICATIONS
 
-# Determine if we're running on Vercel or locally
-is_vercel_env = 'VERCEL' in os.environ
-
-if is_vercel_env:
-    # When running on Vercel, use SQLite for simplicity
-    # Note: This is for demonstration purposes; for production, 
-    # you would want to set up a proper database service
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///transcripthub.db'
-    print("Running on Vercel with SQLite database")
+# Log the environment we're running in
+if config.IS_VERCEL:
+    print(f"Running on Vercel with {config.DATABASE_TYPE} database")
 else:
-    # When running locally on Replit, use the PostgreSQL database
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
-    print("Running locally with PostgreSQL database")
-
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    print(f"Running locally with {config.DATABASE_TYPE} database")
 
 # Configure connection pooling and other SQLAlchemy settings
-if not is_vercel_env:
+if not config.IS_VERCEL:
     # Connection pooling is more important for PostgreSQL than SQLite
     app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
         'pool_recycle': 280,  # Recycle connections before PostgreSQL's 300s timeout

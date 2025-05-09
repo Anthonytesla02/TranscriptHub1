@@ -1,19 +1,11 @@
 import os
 import requests
 import json
+from config import get_mistral_api_key, MISTRAL_API_URL
 
-# Determine if we're running on Vercel
-is_vercel_env = 'VERCEL' in os.environ
-
-# Get API key from environment variable on Vercel, otherwise use hardcoded value
-if is_vercel_env and 'MISTRAL_API_KEY' in os.environ:
-    api_key = os.environ.get('MISTRAL_API_KEY')
-    print("Using Mistral API key from Vercel environment variables")
-else:
-    # Hardcoded credentials for simplicity (for local development)
-    api_key = "nCmZyPuNmY8PfYzg8NyjAE8BpQQKAftB"
-    print("Using hardcoded Mistral API key")
-api_url = "https://api.mistral.ai/v1/chat/completions"
+# Get API key from config
+api_key = get_mistral_api_key()
+api_url = MISTRAL_API_URL
 
 def get_chat_response(messages, transcript_content, model="mistral-large-latest"):
     """
