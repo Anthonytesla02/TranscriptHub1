@@ -42,7 +42,9 @@ else:
 # Initialize extensions
 db.init_app(app)
 login_manager = LoginManager(app)
-login_manager.login_view = 'login'
+# Set the login view to redirect to when login is required
+# This is a string attribute, not None, so we need to set it this way
+setattr(login_manager, 'login_view', 'login')
 
 # Close database sessions after each request
 @app.teardown_request
@@ -247,14 +249,23 @@ def extract():
             transcript_list = YouTubeTranscriptApi.get_transcript(video_id, languages=['en'])
         except NoTranscriptFound:
             # Fallback: try to get any available transcript if English isn't available
-            transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)
-            
-            # Get the first available transcript
-            if transcript_list:
-                transcript = transcript_list[0]
-                transcript_list = transcript.fetch()
-            else:
-                raise NoTranscriptFound(f"No transcripts found for video ID: {video_id}")
+            try:
+                # Get list of available transcripts
+                transcript_list_obj = YouTubeTranscriptApi.list_transcripts(video_id)
+                
+                # Get available languages
+                available_transcripts = list(transcript_list_obj)
+                
+                if available_transcripts:
+                    # Get the first available transcript
+                    first_transcript = available_transcripts[0]
+                    transcript_list = first_transcript.fetch()
+                else:
+                    raise NoTranscriptFound(f"No transcripts found for video ID: {video_id}")
+            except Exception as e:
+                # Handle any errors in the transcript API
+                print(f"Error fetching transcript: {str(e)}")
+                raise NoTranscriptFound(f"Could not fetch transcript: {str(e)}")
                 
         # Format the transcript with timestamps
         formatted_entries = []
@@ -435,7 +446,7 @@ def chat(chat_id):
         return redirect(url_for('index'))
     
     # Get the transcript content
-    transcript = Transcript.query.get(chat.transcript_id)
+    transcript = Transcript.query.get_or_404(chat.transcript_id)
     messages = Message.query.filter_by(chat_id=chat_id).order_by(Message.timestamp).all()
     
     return render_template(
@@ -449,11 +460,17 @@ def chat(chat_id):
 @login_required
 def send_message():
     """API endpoint to send a message and get an AI response"""
-    data = request.json
+    if not request.is_json:
+        return jsonify({'error': 'Request must be JSON'}), 400
+        
+    data = request.get_json()
+    if not data:
+        return jsonify({'error': 'Invalid JSON data'}), 400
+        
     chat_id = data.get('chat_id')
-    content = data.get('content')
+    message_content = data.get('content')
     
-    if not chat_id or not content:
+    if not chat_id or not message_content:
         return jsonify({'error': 'Missing chat_id or content'}), 400
     
     # Verify the chat exists and belongs to the user
@@ -462,11 +479,11 @@ def send_message():
         return jsonify({'error': 'You do not have permission to access this chat'}), 403
     
     # Get the transcript
-    transcript = Transcript.query.get(chat.transcript_id)
+    transcript = Transcript.query.get_or_404(chat.transcript_id)
     
     # Save the user message
     user_message = Message(
-        content=content,
+        content=message_content,
         role='user',
         chat_id=chat_id
     )
