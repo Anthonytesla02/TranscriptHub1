@@ -15,7 +15,13 @@ else
   pip install -r requirements.txt
 fi
 
-# Create sqlite database directory if it doesn't exist
-mkdir -p .vercel/storage
+# Create directory for static files if it doesn't exist
+mkdir -p static
+
+# Display Python and package versions for debugging
+echo "Python version:"
+python --version
+echo "Installed packages:"
+pip list
 
 echo "Build completed successfully!"

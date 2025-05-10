@@ -13,7 +13,20 @@ from utils import get_chat_response, summarize_transcript
 # Flask app configuration using environment variables with development fallbacks
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('FLASK_SECRET_KEY', 'c1a4f89c0e3e44b88ac44f3458f0d391')
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL') or os.environ.get('SQLALCHEMY_DATABASE_URI')
+
+# Handle database URI for different environments
+database_url = os.environ.get('DATABASE_URL') or os.environ.get('SQLALCHEMY_DATABASE_URI')
+
+# Check if we're running on Vercel
+is_vercel = os.environ.get('VERCEL') == '1'
+
+if is_vercel:
+    # In Vercel, use an in-memory SQLite database as the filesystem is read-only
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+    print("Running on Vercel with in-memory SQLite database")
+else:
+    app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+    print(f"Using database: {database_url}")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Configure connection pooling and other SQLAlchemy settings
@@ -138,7 +151,7 @@ with app.app_context():
             time.sleep(2)
             
             if not check_db_connection():
-                print("Error: Database connection failed after retry. Check your PostgreSQL configuration.")
+                print("Error: Database connection failed after retry. Check database configuration.")
             else:
                 print("Database connection established on retry.")
         else:
@@ -171,26 +184,67 @@ with app.app_context():
             print("Some required tables are missing. Attempting to recreate...")
             db.create_all()
         
-        # Step 5: Create test user account if it doesn't exist
-        def create_test_user():
-            if not User.query.filter_by(username='testuser').first():
-                print("Creating test user account...")
-                test_user = User(username='testuser', password=generate_password_hash('password123'))
-                db.session.add(test_user)
-                db.session.commit()
-                return True
-            return False
+        # Step 5: Create test data if needed (especially for Vercel in-memory database)
+        if is_vercel:
+            print("Creating sample data for Vercel deployment...")
             
-        user_created = safe_db_query(
-            create_test_user,
-            default_return=False,
-            log_prefix="Error creating test user"
-        )
-        
-        if user_created:
-            print("Test user created successfully. Username: testuser, Password: password123")
+            # Create a test user for demo
+            if not User.query.filter_by(username='demo').first():
+                demo_user = User(username='demo', password=generate_password_hash('demo123'))
+                db.session.add(demo_user)
+                db.session.commit()
+                print("Demo user created: username='demo', password='demo123'")
+                
+                # Add a sample transcript
+                sample_transcript = Transcript(
+                    video_url="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+                    content="[00:00] This is a sample transcript.\n[00:05] Created for demo purposes.",
+                    user_id=demo_user.id
+                )
+                db.session.add(sample_transcript)
+                db.session.commit()
+                print("Sample transcript added")
+                
+                # Add a sample chat
+                sample_chat = Chat(
+                    title="Demo Chat",
+                    user_id=demo_user.id,
+                    transcript_id=sample_transcript.id
+                )
+                db.session.add(sample_chat)
+                db.session.commit()
+                
+                # Add sample messages
+                sample_messages = [
+                    Message(content="What is this video about?", role="user", chat_id=sample_chat.id),
+                    Message(content="This is a sample transcript for demonstration purposes.", role="assistant", chat_id=sample_chat.id)
+                ]
+                db.session.add_all(sample_messages)
+                db.session.commit()
+                print("Sample chat and messages created")
+            else:
+                print("Demo data already exists")
         else:
-            print("Test user already exists or could not be created.")
+            # For non-Vercel environments, create test user if needed
+            def create_test_user():
+                if not User.query.filter_by(username='testuser').first():
+                    print("Creating test user account...")
+                    test_user = User(username='testuser', password=generate_password_hash('password123'))
+                    db.session.add(test_user)
+                    db.session.commit()
+                    return True
+                return False
+                
+            user_created = safe_db_query(
+                create_test_user,
+                default_return=False,
+                log_prefix="Error creating test user"
+            )
+            
+            if user_created:
+                print("Test user created successfully. Username: testuser, Password: password123")
+            else:
+                print("Test user already exists or could not be created.")
             
         print("Automatic database setup completed successfully.")
             
